@@ -40,6 +40,9 @@ char nrf24_lastMessageStatus();
 char nrf24_retransmissionCount();
 void nrf24_readRegister(char reg, char* value, char len);
 void nrf24_powerDown();
+char nrf24_dataReady();
+char nrf24_rxFifoEmpty();
+void nrf24_getData(char* data);
 
 
 

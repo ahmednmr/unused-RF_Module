@@ -292,3 +292,50 @@ void nrf24_powerDown()
     nrf24_configRegister(CONFIG,nrf24_CONFIG);
 }
 
+
+/* Checks if data is available for reading */
+/* Returns 1 if data is ready ... */
+char nrf24_dataReady()
+{
+    // See note in getData() function - just checking RX_DR isn't good enough
+	char status = nrf24_getStatus();
+
+    // We can short circuit on RX_DR, but if it's not set, we still need
+    // to check the FIFO for any pending packets
+    if ( status & (1 << RX_DR) )
+    {
+        return 1;
+    }
+
+    return !nrf24_rxFifoEmpty();
+}
+
+
+/* Reads payload bytes into data array */
+void nrf24_getData(char* data)
+{
+    /* Pull down chip select */
+    nrf24_csn_digitalWrite(LOW);
+
+    /* Send cmd to read rx payload */
+    SPI_Transmit( R_RX_PAYLOAD );
+
+    /* Read payload */
+    nrf24_transferSync(data,data,payload_len);
+
+    /* Pull up chip select */
+    nrf24_csn_digitalWrite(HIGH);
+
+    /* Reset status register */
+    nrf24_configRegister(STATUS,(1<<RX_DR));    //clear flag
+}
+
+
+char nrf24_rxFifoEmpty()
+{
+	char fifoStatus;
+
+    nrf24_readRegister(FIFO_STATUS,&fifoStatus,1);
+
+    return (fifoStatus & (1 << RX_EMPTY));
+}

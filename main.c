@@ -15,9 +15,11 @@
 
 char temp;
 char q = 0;
-char data_array[4];
-char tx_address[5] = {0xE7,0xE7,0xE7,0xE7,0xE7};
-char rx_address[5] = {0xD7,0xD7,0xD7,0xD7,0xD7};
+unsigned int i=0;
+char data_received[4];
+char data_send[4]="lab2";
+char tx_address[5] = {0xD7,0xD7,0xD7,0xD7,0xD7};
+char rx_address[5] = {0xE7,0xE7,0xE7,0xE7,0xE7};
 
 
 
@@ -40,17 +42,33 @@ int main()
 
 	while(1)
 	{
+ i=0;
 
-		/* Fill the data buffer */
-		data_array[0] = 'n';
-		data_array[1] = 'm';
-		data_array[2] =  'r';
-		data_array[3] = '1';
+while(i<80)
+{
+
+        if(nrf24_dataReady())
+        {
+            nrf24_getData(data_received);
+            UART_SEND_string("Data recieved ----->>  ");
+
+            UART_SendChar(data_received[0]);
+
+            UART_SendChar(data_received[1]);
+            UART_SendChar(data_received[2]);
+            UART_SendChar(data_received[3]);
+            UART_SEND_string("\r\n\r\n");
+        }
+
+_delay_ms(100);
+i++;
+}
+
 
 		UART_SEND_string("send the array\r\n");
 		/* Automatically goes to TX mode */
-		nrf24_send(data_array);
-		UART_SEND_string("array has been sent\r\n");
+		nrf24_send(data_send);
+
 		/* Wait for transmission to end */
 		while(nrf24_isSending());
 		UART_SEND_string("transmision has been ended\r\n");
@@ -79,12 +97,16 @@ int main()
 
 		/* Optionally, go back to RX mode ... */
 		nrf24_powerUpRx();
+		_delay_ms(100);
+
+
+
 
 		/* Or you might want to power down after TX */
 		//		 nrf24_powerDown();
 
 		/* Wait a little ... */
-		_delay_ms(2000);
+//		_delay_ms(1000);
 		UART_SEND_string("End\r\n");
 	}
 	return 0;
